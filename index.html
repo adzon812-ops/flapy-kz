@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+слушай что то код короткий который ты сейчас скинул. до этого был вот такой. сравни <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -7,14 +7,14 @@
     <meta name="description" content="Закрытая площадка для риелторов Астаны. Объекты, обмены, коммуникация в одном месте.">
     
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300 ;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
     
     <!-- Leaflet Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css " />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js "></script>
     
     <style>
         :root {
@@ -1769,7 +1769,7 @@
                     <!-- Property Card 1 -->
                     <div class="property-card" onclick="openPropertyDetail(1)">
                         <div style="position: relative;">
-                            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop" alt="Property" class="property-image">
+                            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop " alt="Property" class="property-image">
                             <div class="property-badges">
                                 <span class="badge badge-sale">Продажа</span>
                                 <span class="badge badge-exclusive">Эксклюзив</span>
@@ -1833,7 +1833,7 @@
                     <!-- Property Card 2 -->
                     <div class="property-card" onclick="openPropertyDetail(2)">
                         <div style="position: relative;">
-                            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop" alt="Property" class="property-image">
+                            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop " alt="Property" class="property-image">
                             <div class="property-badges">
                                 <span class="badge badge-exchange">Обмен</span>
                             </div>
@@ -1889,7 +1889,7 @@
                     <!-- Property Card 3 -->
                     <div class="property-card" onclick="openPropertyDetail(3)">
                         <div style="position: relative;">
-                            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop" alt="Property" class="property-image">
+                            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop " alt="Property" class="property-image">
                             <div class="property-badges">
                                 <span class="badge badge-rent">Аренда</span>
                             </div>
@@ -2191,7 +2191,7 @@
                 <div class="property-list">
                     <div class="property-card">
                         <div style="position: relative;">
-                            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop" alt="Property" class="property-image">
+                            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop " alt="Property" class="property-image">
                             <div class="property-badges">
                                 <span class="badge badge-exchange">ОБМЕН</span>
                             </div>
@@ -2251,7 +2251,7 @@
     </button>
     
     <!-- WhatsApp Support -->
-    <a href="https://wa.me/77714874879" class="support-btn" target="_blank" title="Поддержка">
+    <a href="https://wa.me/77714874879 " class="support-btn" target="_blank" title="Поддержка">
         <i class="fab fa-whatsapp"></i>
     </a>
     
@@ -2832,7 +2832,7 @@
         function openPropertyDetail(id) {
             currentPropertyId = id;
             // Here would load property details
-            document.getElementById('detailImage').src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop';
+            document.getElementById('detailImage').src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop ';
             openModal('propertyDetailModal');
             
             // Init detail map
@@ -3015,13 +3015,13 @@
         }
         
         function shareVia(platform) {
-            const url = 'https://flapy.kz/p/AST-78432';
+            const url = 'https://flapy.kz/p/AST-78432 ';
             const text = 'Посмотрите эту квартиру на Flapy!';
             
             if (platform === 'whatsapp') {
-                window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`);
+                window.open(`https://wa.me/?text= ${encodeURIComponent(text + ' ' + url)}`);
             } else if (platform === 'telegram') {
-                window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+                window.open(`https://t.me/share/url?url= ${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
             }
             
             closeModal('shareModal');
@@ -3029,7 +3029,7 @@
         }
         
         function copyLink() {
-            navigator.clipboard.writeText('https://flapy.kz/p/AST-78432');
+            navigator.clipboard.writeText('https://flapy.kz/p/AST-78432 ');
             showToast('Ссылка скопирована!');
         }
         
