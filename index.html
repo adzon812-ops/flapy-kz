@@ -1,0 +1,3131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flapy.kz — Профессиональная платформа для риелторов Астаны</title>
+    <meta name="description" content="Закрытая площадка для риелторов Астаны. Объекты, обмены, коммуникация в одном месте.">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        :root {
+            --primary: #E07B39;
+            --primary-light: #F4A261;
+            --primary-dark: #C65D26;
+            --secondary: #2A9D8F;
+            --accent: #E9C46A;
+            --dark: #264653;
+            --light: #F8F9FA;
+            --white: #FFFFFF;
+            --gray: #6C757D;
+            --success: #27AE60;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
+            --radius: 16px;
+            --radius-sm: 12px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        .allow-select {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            color: rgba(224,123,57,0.03);
+            pointer-events: none;
+            z-index: 9999;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--light);
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 80px;
+        }
+        
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 100%;
+                padding-bottom: 0;
+            }
+        }
+        
+        .header {
+            background: var(--white);
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--primary);
+        }
+        
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+        
+        .tm-badge {
+            font-size: 10px;
+            color: var(--gray);
+            margin-left: 2px;
+            vertical-align: super;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--light);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .icon-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .search-section {
+            padding: 16px;
+            background: var(--white);
+            margin-bottom: 8px;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 2px solid #E8ECF2;
+            border-radius: var(--radius);
+            font-size: 15px;
+            transition: all 0.3s;
+            background: var(--light);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--white);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .filter-btn {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            border: none;
+            border-radius: var(--radius);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .filter-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .quick-stats {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        
+        .quick-stats::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .stat-chip {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: none;
+        }
+        
+        .stat-chip:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-chip.secondary {
+            background: linear-gradient(135deg, var(--secondary), #21867a);
+        }
+        
+        .stat-chip.accent {
+            background: linear-gradient(135deg, var(--accent), #d4a373);
+            color: var(--dark);
+        }
+        
+        .main-content {
+            padding: 0 16px 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding: 4px;
+            scrollbar-width: none;
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab {
+            padding: 10px 18px;
+            background: var(--white);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            color: var(--gray);
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .tab:hover:not(.active) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .property-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .property-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .property-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .property-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            position: relative;
+        }
+        
+        .property-badges {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-sale { background: var(--primary); color: white; }
+        .badge-rent { background: var(--secondary); color: white; }
+        .badge-exchange { background: var(--accent); color: var(--dark); }
+        .badge-exclusive { background: var(--dark); color: white; }
+        
+        .property-actions-top {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn-small {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--dark);
+            backdrop-filter: blur(10px);
+        }
+        
+        .action-btn-small:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .property-info {
+            padding: 16px;
+        }
+        
+        .property-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .property-price-per-m2 {
+            font-size: 12px;
+            color: var(--gray);
+            font-weight: 400;
+        }
+        
+        .property-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        
+        .property-location {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--gray);
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .property-features {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .feature i {
+            color: var(--primary);
+            font-size: 13px;
+        }
+        
+        .property-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #E8ECF2;
+        }
+        
+        .realtor-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .realtor-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .realtor-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .realtor-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .realtor-id {
+            font-size: 11px;
+            color: var(--gray);
+        }
+        
+        .property-buttons {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: var(--white);
+            padding: 8px 16px 16px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            border-radius: 24px 24px 0 0;
+        }
+        
+        @media (min-width: 768px) {
+            .bottom-nav {
+                display: none;
+            }
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--gray);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            color: var(--primary);
+            background: rgba(224,123,57,0.1);
+        }
+        
+        .nav-item i {
+            font-size: 20px;
+        }
+        
+        .nav-item.add-btn {
+            background: var(--primary);
+            color: white;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            margin-top: -16px;
+            box-shadow: 0 4px 15px rgba(224,123,57,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-item.add-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary-dark);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: flex-end;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            border-radius: 24px 24px 0 0;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #E8ECF2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            z-index: 10;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--light);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--dark);
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #E8ECF2;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .price-input-wrapper {
+            position: relative;
+        }
+        
+        .currency-label {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .image-upload {
+            border: 2px dashed #D1D8E0;
+            border-radius: var(--radius);
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--light);
+        }
+        
+        .image-upload:hover {
+            border-color: var(--primary);
+            background: rgba(224,123,57,0.05);
+        }
+        
+        .image-upload i {
+            font-size: 40px;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+        
+        .image-upload-text {
+            color: var(--gray);
+            font-size: 13px;
+        }
+        
+        .btn-full {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-full:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(224,123,57,0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+        }
+        
+        .btn-secondary:hover {
+            background: #E8ECF2;
+        }
+        
+        .ai-float-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--secondary), #21867a);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(42,157,143,0.4);
+            z-index: 999;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ai-float-btn:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+        
+        @media (min-width: 768px) {
+            .ai-float-btn {
+                bottom: 40px;
+                right: 40px;
+            }
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 50vh;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.ai {
+            align-self: flex-start;
+            background: var(--light);
+            color: var(--dark);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .chat-input-wrapper {
+            padding: 16px;
+            border-top: 1px solid #E8ECF2;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #E8ECF2;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+        
+        .chat-send {
+            width: 44px;
+            height: 44px;
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .chat-send:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        #map {
+            height: 250px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            z-index: 1;
+        }
+        
+        .calculator-result {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .calculator-amount {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .calculator-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .bank-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .bank-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .bank-item:hover, .bank-item.selected {
+            background: rgba(224,123,57,0.1);
+            border-color: var(--primary);
+        }
+        
+        .bank-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .bank-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 16px;
+        }
+        
+        .bank-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .bank-rate {
+            font-size: 12px;
+            color: var(--gray);
+        }
+        
+        .exchange-card {
+            background: linear-gradient(135deg, var(--accent), #d4a373);
+            color: var(--dark);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+        }
+        
+        .exchange-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .exchange-desc {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin: -20px -20px 20px;
+        }
+        
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--primary);
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+        
+        .profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .profile-id {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .profile-stat {
+            text-align: center;
+        }
+        
+        .profile-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .profile-stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .verification-badge-large {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .menu-item:hover {
+            background: rgba(224,123,57,0.1);
+        }
+        
+        .menu-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .menu-item-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        .menu-item-text {
+            font-weight: 500;
+        }
+        
+        .menu-item-subtext {
+            font-size: 12px;
+            color: var(--gray);
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .comparison-item {
+            background: var(--light);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+        
+        .comparison-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        
+        .comparison-label {
+            font-size: 12px;
+            color: var(--gray);
+        }
+        
+        .legal-footer {
+            background: var(--dark);
+            color: white;
+            padding: 30px 20px;
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .legal-text {
+            font-size: 10px;
+            line-height: 1.8;
+            opacity: 0.7;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .legal-links {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .legal-link {
+            color: white;
+            text-decoration: none;
+            font-size: 11px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        
+        .legal-link:hover {
+            opacity: 1;
+        }
+        
+        .admin-trigger {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 9999;
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--dark);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            z-index: 3000;
+            opacity: 0;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-lg);
+            font-size: 14px;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        @media (min-width: 768px) {
+            .desktop-layout {
+                display: grid;
+                grid-template-columns: 280px 1fr;
+                min-height: 100vh;
+            }
+            
+            .sidebar {
+                background: var(--white);
+                padding: 24px;
+                border-right: 1px solid #E8ECF2;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+                overflow-y: auto;
+            }
+            
+            .sidebar-logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 24px;
+                font-weight: 700;
+                color: var(--primary);
+                margin-bottom: 40px;
+            }
+            
+            .sidebar-logo img {
+                width: 44px;
+                height: 44px;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .sidebar-item {
+                padding: 14px 16px;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: var(--gray);
+                text-decoration: none;
+                font-size: 14px;
+            }
+            
+            .sidebar-item:hover, .sidebar-item.active {
+                background: rgba(224,123,57,0.1);
+                color: var(--primary);
+            }
+            
+            .sidebar-item i {
+                width: 24px;
+                text-align: center;
+                font-size: 18px;
+            }
+            
+            .main-area {
+                padding: 32px;
+                max-width: 1200px;
+            }
+            
+            .properties-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+                gap: 24px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .mobile-only { display: none !important; }
+        }
+        
+        @media (max-width: 767px) {
+            .desktop-only { display: none !important; }
+        }
+        
+        .auth-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .auth-btn {
+            padding: 16px;
+            border: 2px solid #E8ECF2;
+            border-radius: var(--radius);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .auth-btn:hover {
+            border-color: var(--primary);
+            background: rgba(224,123,57,0.05);
+        }
+        
+        .auth-btn i {
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #E8ECF2;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 16px;
+            position: relative;
+            color: var(--gray);
+            font-size: 13px;
+        }
+        
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #E3F2FD;
+            color: #1976D2;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .video-indicator {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .share-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: var(--light);
+        }
+        
+        .share-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-4px);
+        }
+        
+        .share-btn i {
+            font-size: 24px;
+        }
+        
+        .share-btn span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .offline-banner {
+            background: #FFF3E0;
+            color: #E65100;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            position: sticky;
+            top: 64px;
+            z-index: 99;
+        }
+        
+        .offline-banner.show {
+            display: block;
+        }
+        
+        .rating {
+            display: flex;
+            gap: 4px;
+            color: #FFC107;
+            font-size: 14px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        
+        .empty-state h3 {
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+        
+        .verification-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        
+        .step-content p {
+            font-size: 13px;
+            color: var(--gray);
+        }
+        
+        .step-status {
+            margin-left: auto;
+            color: var(--success);
+            font-size: 20px;
+        }
+        
+        .detail-gallery {
+            position: relative;
+            height: 300px;
+            background: var(--dark);
+        }
+        
+        .detail-gallery img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .detail-content {
+            padding: 20px;
+        }
+        
+        .detail-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .detail-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .detail-section {
+            margin-bottom: 24px;
+        }
+        
+        .detail-section h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+        
+        .detail-features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .detail-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+        }
+        
+        .detail-feature i {
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        .detail-feature-label {
+            font-size: 12px;
+            color: var(--gray);
+        }
+        
+        .detail-feature-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .detail-description {
+            background: var(--light);
+            padding: 16px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .detail-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .detail-actions .btn-full {
+            flex: 1;
+        }
+        
+        .detail-actions .btn-outline {
+            flex: 1;
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .support-btn {
+            position: fixed;
+            bottom: 170px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #25D366;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+            z-index: 998;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        
+        .support-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        @media (min-width: 768px) {
+            .support-btn {
+                bottom: 110px;
+                right: 40px;
+            }
+        }
+        
+        .crm-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .crm-stat-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        
+        .crm-stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        
+        .crm-stat-label {
+            font-size: 13px;
+            color: var(--gray);
+        }
+        
+        .clients-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .client-card {
+            background: var(--white);
+            padding: 16px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .client-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--gray);
+        }
+        
+        .client-info {
+            flex: 1;
+        }
+        
+        .client-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .client-phone {
+            font-size: 13px;
+            color: var(--gray);
+        }
+        
+        .client-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .status-new { background: #E3F2FD; color: #1976D2; }
+        .status-viewing { background: #FFF3E0; color: #F57C00; }
+        .status-deal { background: #E8F5E9; color: #388E3C; }
+    </style>
+</head>
+<body>
+    <!-- Admin Hidden Entry (5 clicks to activate) -->
+    <div class="admin-trigger" onclick="handleAdminClick()" title="Admin Entry"></div>
+    
+    <!-- Watermark -->
+    <div class="watermark">FLAPY.KZ</div>
+    
+    <!-- Offline Banner -->
+    <div class="offline-banner" id="offlineBanner">
+        <i class="fas fa-wifi-slash"></i> Нет подключения. Оффлайн-режим активирован
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Mobile App Container -->
+    <div class="app-container" id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="Flapy" class="logo-img" id="logoImg">
+                Flapy<span class="tm-badge">™</span>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="showSection('favorites')">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <button class="icon-btn" onclick="showSection('notifications')">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <button class="icon-btn desktop-only" onclick="showSection('profile')">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-bar">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Поиск по району, улице, ID..." id="searchInput">
+                </div>
+                <button class="filter-btn" onclick="openFilters()">
+                    <i class="fas fa-sliders-h"></i>
+                </button>
+            </div>
+            
+            <div class="quick-stats">
+                <button class="stat-chip" onclick="filterByType('all')">
+                    <i class="fas fa-fire"></i> 156 новых
+                </button>
+                <button class="stat-chip secondary" onclick="showSection('exchange')">
+                    <i class="fas fa-exchange-alt"></i> 42 обмена
+                </button>
+                <button class="stat-chip accent" onclick="showSection('crm')">
+                    <i class="fas fa-chart-line"></i> Моя статистика
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <main class="main-content" id="mainContent">
+            <!-- Home Section -->
+            <div id="homeSection">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab(this, 'all')">Все объекты</div>
+                    <div class="tab" onclick="switchTab(this, 'sale')">Продажа</div>
+                    <div class="tab" onclick="switchTab(this, 'rent')">Аренда</div>
+                    <div class="tab" onclick="switchTab(this, 'exchange')">Обмен</div>
+                    <div class="tab" onclick="switchTab(this, 'exclusive')">Эксклюзив</div>
+                </div>
+                
+                <!-- Property List -->
+                <div class="property-list" id="propertyList">
+                    <!-- Property Card 1 -->
+                    <div class="property-card" onclick="openPropertyDetail(1)">
+                        <div style="position: relative;">
+                            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop" alt="Property" class="property-image">
+                            <div class="property-badges">
+                                <span class="badge badge-sale">Продажа</span>
+                                <span class="badge badge-exclusive">Эксклюзив</span>
+                            </div>
+                            <div class="property-actions-top">
+                                <button class="action-btn-small" onclick="event.stopPropagation(); toggleFavorite(1)">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button class="action-btn-small" onclick="event.stopPropagation(); shareProperty(1)">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                            <div class="video-indicator">
+                                <i class="fas fa-play-circle"></i> Видео
+                            </div>
+                        </div>
+                        <div class="property-info">
+                            <div class="property-price">
+                                45 000 000 ₸
+                                <span class="property-price-per-m2">850 000 ₸/м²</span>
+                            </div>
+                            <h3 class="property-title">3-комнатная квартира, 85 м², ЖК Нурлы Тау</h3>
+                            <div class="property-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Есильский район, проспект Кабанбай батыра 83
+                            </div>
+                            <div class="property-features">
+                                <div class="feature">
+                                    <i class="fas fa-bed"></i> 3 комнаты
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-ruler-combined"></i> 85 м²
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-building"></i> 12/16 этаж
+                                </div>
+                            </div>
+                            <div class="property-footer">
+                                <div class="realtor-info">
+                                    <div class="realtor-avatar">АК</div>
+                                    <div class="realtor-details">
+                                        <div class="realtor-name">
+                                            Анна Ким 
+                                            <span class="verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>
+                                        </div>
+                                        <div class="realtor-id">ID: R-78234</div>
+                                    </div>
+                                </div>
+                                <div class="property-buttons">
+                                    <button class="btn-small btn-outline" onclick="event.stopPropagation(); quickMessage(1)">
+                                        <i class="fas fa-comment"></i>
+                                    </button>
+                                    <button class="btn-small btn-primary" onclick="event.stopPropagation(); callRealtor(1)">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Property Card 2 -->
+                    <div class="property-card" onclick="openPropertyDetail(2)">
+                        <div style="position: relative;">
+                            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop" alt="Property" class="property-image">
+                            <div class="property-badges">
+                                <span class="badge badge-exchange">Обмен</span>
+                            </div>
+                            <div class="property-actions-top">
+                                <button class="action-btn-small" onclick="event.stopPropagation(); toggleFavorite(2)">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="property-info">
+                            <div class="property-price">
+                                Обмен на 2-комнатную + доплата
+                            </div>
+                            <h3 class="property-title">4-комнатная квартира, 120 м², Ботанический сад</h3>
+                            <div class="property-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Алматинский район, мкр. Самал-2
+                            </div>
+                            <div class="property-features">
+                                <div class="feature">
+                                    <i class="fas fa-bed"></i> 4 комнаты
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-ruler-combined"></i> 120 м²
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-exchange-alt"></i> На 2-комн.
+                                </div>
+                            </div>
+                            <div class="property-footer">
+                                <div class="realtor-info">
+                                    <div class="realtor-avatar">МС</div>
+                                    <div class="realtor-details">
+                                        <div class="realtor-name">
+                                            Марат Сулейменов
+                                            <span class="verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>
+                                        </div>
+                                        <div class="realtor-id">ID: R-45129</div>
+                                    </div>
+                                </div>
+                                <div class="property-buttons">
+                                    <button class="btn-small btn-outline" onclick="event.stopPropagation(); openExchangeModal(2)">
+                                        Обмен
+                                    </button>
+                                    <button class="btn-small btn-primary" onclick="event.stopPropagation(); quickMessage(2)">
+                                        <i class="fas fa-comment"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Property Card 3 -->
+                    <div class="property-card" onclick="openPropertyDetail(3)">
+                        <div style="position: relative;">
+                            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop" alt="Property" class="property-image">
+                            <div class="property-badges">
+                                <span class="badge badge-rent">Аренда</span>
+                            </div>
+                            <div class="property-actions-top">
+                                <button class="action-btn-small" onclick="event.stopPropagation(); toggleFavorite(3)">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="property-info">
+                            <div class="property-price">
+                                450 000 ₸/мес
+                                <span class="property-price-per-m2">Залог: 900 000 ₸</span>
+                            </div>
+                            <h3 class="property-title">2-комнатная квартира, 65 м², ЖК Bi City Seoul</h3>
+                            <div class="property-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Нурайский район, ул. Сыганак 83
+                            </div>
+                            <div class="property-features">
+                                <div class="feature">
+                                    <i class="fas fa-bed"></i> 2 комнаты
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-ruler-combined"></i> 65 м²
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-couch"></i> С мебелью
+                                </div>
+                            </div>
+                            <div class="property-footer">
+                                <div class="realtor-info">
+                                    <div class="realtor-avatar">ДА</div>
+                                    <div class="realtor-details">
+                                        <div class="realtor-name">
+                                            Дана Ахметова
+                                            <span class="verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>
+                                        </div>
+                                        <div class="realtor-id">ID: R-89341</div>
+                                    </div>
+                                </div>
+                                <div class="property-buttons">
+                                    <button class="btn-small btn-outline" onclick="event.stopPropagation(); quickMessage(3)">
+                                        <i class="fas fa-comment"></i>
+                                    </button>
+                                    <button class="btn-small btn-primary" onclick="event.stopPropagation(); callRealtor(3)">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Section -->
+            <div id="profileSection" style="display: none;">
+                <div class="profile-header">
+                    <div class="profile-avatar-large">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-name">Азамат Рахимов</div>
+                    <div class="profile-id">ID: R-10294</div>
+                    <div class="verification-badge-large">
+                        <i class="fas fa-shield-alt"></i> Верифицированный риелтор
+                    </div>
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">24</div>
+                            <div class="profile-stat-label">Объектов</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">156</div>
+                            <div class="profile-stat-label">Продаж</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">4.9</div>
+                            <div class="profile-stat-label">Рейтинг</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="menu-list">
+                    <div class="menu-item" onclick="showSection('crm')">
+                        <div class="menu-item-left">
+                            <div class="menu-item-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div>
+                                <div class="menu-item-text">Моя CRM</div>
+                                <div class="menu-item-subtext">Управление клиентами и сделками</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                    
+                    <div class="menu-item" onclick="showSection('myObjects')">
+                        <div class="menu-item-left">
+                            <div class="menu-item-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div>
+                                <div class="menu-item-text">Мои объекты</div>
+                                <div class="menu-item-subtext">24 активных объявления</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                    
+                    <div class="menu-item" onclick="showSection('verification')">
+                        <div class="menu-item-left">
+                            <div class="menu-item-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div>
+                                <div class="menu-item-text">Верификация</div>
+                                <div class="menu-item-subtext">Подтверждено ✓</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                    
+                    <div class="menu-item" onclick="openMortgageCalculator()">
+                        <div class="menu-item-left">
+                            <div class="menu-item-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div>
+                                <div class="menu-item-text">Ипотечный калькулятор</div>
+                                <div class="menu-item-subtext">Расчет платежей по банкам</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                    
+                    <div class="menu-item" onclick="showSection('settings')">
+                        <div class="menu-item-left">
+                            <div class="menu-item-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div>
+                                <div class="menu-item-text">Настройки</div>
+                                <div class="menu-item-subtext">Уведомления, безопасность</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                    
+                    <div class="menu-item" onclick="handleLogout()">
+                        <div class="menu-item-left">
+                            <div class="menu-item-icon" style="color: var(--primary);">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </div>
+                            <div>
+                                <div class="menu-item-text">Выйти</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Verification Section -->
+            <div id="verificationSection" style="display: none;">
+                <button class="btn-full btn-secondary" style="margin-bottom: 20px;" onclick="showSection('profile')">
+                    <i class="fas fa-arrow-left"></i> Назад в профиль
+                </button>
+                
+                <h2 style="margin-bottom: 20px;">Верификация риелтора</h2>
+                
+                <div class="verification-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Регистрация в системе</h4>
+                        <p>Телефон подтвержден</p>
+                    </div>
+                    <div class="step-status"><i class="fas fa-check-circle"></i></div>
+                </div>
+                
+                <div class="verification-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Паспортные данные</h4>
+                        <p>ИИН и документы проверены</p>
+                    </div>
+                    <div class="step-status"><i class="fas fa-check-circle"></i></div>
+                </div>
+                
+                <div class="verification-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Лицензия агента</h4>
+                        <p>Государственная лицензия №942831</p>
+                    </div>
+                    <div class="step-status"><i class="fas fa-check-circle"></i></div>
+                </div>
+                
+                <div class="verification-step">
+                    <div class="step-number" style="background: var(--gray);">4</div>
+                    <div class="step-content">
+                        <h4>Проверка агентства</h4>
+                        <p>Требуется подтверждение от агентства</p>
+                    </div>
+                    <div class="step-status" style="color: var(--gray);"><i class="fas fa-clock"></i></div>
+                </div>
+                
+                <div style="background: var(--light); padding: 20px; border-radius: var(--radius); margin-top: 20px;">
+                    <h4 style="margin-bottom: 10px;"><i class="fas fa-info-circle" style="color: var(--primary);"></i> Почему важна верификация?</h4>
+                    <ul style="font-size: 13px; color: var(--gray); padding-left: 20px; line-height: 1.8;">
+                        <li>Доступ к закрытой базе объектов</li>
+                        <li>Повышенное доверие клиентов</li>
+                        <li>Защита от мошенников</li>
+                        <li>Приоритет в поиске</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- CRM Section -->
+            <div id="crmSection" style="display: none;">
+                <button class="btn-full btn-secondary" style="margin-bottom: 20px;" onclick="showSection('profile')">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+                
+                <h2 style="margin-bottom: 20px;">Моя CRM система</h2>
+                
+                <div class="crm-stats">
+                    <div class="crm-stat-card">
+                        <div class="crm-stat-value">12</div>
+                        <div class="crm-stat-label">Активных клиентов</div>
+                    </div>
+                    <div class="crm-stat-card">
+                        <div class="crm-stat-value">3</div>
+                        <div class="crm-stat-label">На просмотре</div>
+                    </div>
+                    <div class="crm-stat-card">
+                        <div class="crm-stat-value">850K</div>
+                        <div class="crm-stat-label">Комиссия (мес)</div>
+                    </div>
+                    <div class="crm-stat-card">
+                        <div class="crm-stat-value">94%</div>
+                        <div class="crm-stat-label">Конверсия</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 16px; font-size: 16px;">Клиенты</h3>
+                <div class="clients-list">
+                    <div class="client-card">
+                        <div class="client-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="client-info">
+                            <div class="client-name">Елена Михайлова</div>
+                            <div class="client-phone">+7 (777) 123-45-67</div>
+                        </div>
+                        <div class="client-status status-viewing">На просмотре</div>
+                    </div>
+                    
+                    <div class="client-card">
+                        <div class="client-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="client-info">
+                            <div class="client-name">Бауыржан Алиев</div>
+                            <div class="client-phone">+7 (701) 987-65-43</div>
+                        </div>
+                        <div class="client-status status-deal">Сделка</div>
+                    </div>
+                    
+                    <div class="client-card">
+                        <div class="client-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="client-info">
+                            <div class="client-name">Гульнар Касымова</div>
+                            <div class="client-phone">+7 (747) 456-78-90</div>
+                        </div>
+                        <div class="client-status status-new">Новый</div>
+                    </div>
+                </div>
+                
+                <button class="btn-full" style="margin-top: 20px;">
+                    <i class="fas fa-plus"></i> Добавить клиента
+                </button>
+            </div>
+            
+            <!-- Exchange Section -->
+            <div id="exchangeSection" style="display: none;">
+                <h2 style="margin-bottom: 20px;">Обмен недвижимости</h2>
+                
+                <div class="exchange-card">
+                    <div class="exchange-title">Безопасный обмен</div>
+                    <div class="exchange-desc">Найдите объект для обмена или предложите свой. Мы проверим документы и сопроводим сделку.</div>
+                    <button class="btn-full" style="background: var(--dark);">
+                        <i class="fas fa-plus"></i> Создать предложение
+                    </button>
+                </div>
+                
+                <h3 style="margin-bottom: 16px; font-size: 16px;">Активные предложения</h3>
+                
+                <div class="property-list">
+                    <div class="property-card">
+                        <div style="position: relative;">
+                            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop" alt="Property" class="property-image">
+                            <div class="property-badges">
+                                <span class="badge badge-exchange">ОБМЕН</span>
+                            </div>
+                        </div>
+                        <div class="property-info">
+                            <div class="property-price">3-комн. → 2-комн. + 10 млн ₸</div>
+                            <h3 class="property-title">Меняю 3-комн. (95м²) на 2-комн. в центре</h3>
+                            <div class="property-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ЖК Orion, Есильский район
+                            </div>
+                            <div class="property-footer">
+                                <div class="realtor-info">
+                                    <div class="realtor-avatar">СТ</div>
+                                    <div class="realtor-details">
+                                        <div class="realtor-name">Сергей Тимофеев</div>
+                                        <div class="realtor-id">ID: R-55231</div>
+                                    </div>
+                                </div>
+                                <button class="btn-small btn-primary">
+                                    Предложить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav mobile-only">
+            <a href="#" class="nav-item active" onclick="showSection('home'); return false;">
+                <i class="fas fa-home"></i>
+                <span>Главная</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('chat'); return false;">
+                <i class="fas fa-comments"></i>
+                <span>Чат</span>
+            </a>
+            <a href="#" class="nav-item add-btn" onclick="openAddProperty(); return false;">
+                <i class="fas fa-plus"></i>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('exchange'); return false;">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Обмен</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('profile'); return false;">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </a>
+        </nav>
+    </div>
+    
+    <!-- AI Assistant Button -->
+    <button class="ai-float-btn" onclick="openAIChat()" title="AI Помощник">
+        <i class="fas fa-robot"></i>
+    </button>
+    
+    <!-- WhatsApp Support -->
+    <a href="https://wa.me/77714874879" class="support-btn" target="_blank" title="Поддержка">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    
+    <!-- Modals -->
+    
+    <!-- Add Property Modal -->
+    <div class="modal" id="addPropertyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-plus-circle" style="color: var(--primary);"></i> Новый объект</h2>
+                <button class="close-btn" onclick="closeModal('addPropertyModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addPropertyForm" onsubmit="submitProperty(event)">
+                    <div class="form-group">
+                        <label class="form-label">Тип сделки</label>
+                        <div class="form-row">
+                            <select class="form-select" id="dealType" style="flex: 1;" onchange="toggleExchangeFields()">
+                                <option value="sale">Продажа</option>
+                                <option value="rent">Аренда</option>
+                                <option value="exchange">Обмен</option>
+                            </select>
+                            <select class="form-select" style="flex: 1;">
+                                <option>Квартира</option>
+                                <option>Дом</option>
+                                <option>Офис</option>
+                                <option>Участок</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="priceGroup">
+                        <label class="form-label">Цена</label>
+                        <div class="price-input-wrapper">
+                            <input type="text" class="form-input" placeholder="45 000 000" id="priceInput" oninput="formatPrice(this)">
+                            <span class="currency-label">₸</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="exchangeGroup" style="display: none;">
+                        <label class="form-label">Условия обмена</label>
+                        <input type="text" class="form-input" placeholder="Например: на 2-комнатную + доплата">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Адрес</label>
+                        <input type="text" class="form-input" placeholder="Район, улица, дом">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Комнаты</label>
+                            <input type="number" class="form-input" placeholder="3">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Площадь, м²</label>
+                            <input type="number" class="form-input" placeholder="85">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Этаж</label>
+                            <input type="number" class="form-input" placeholder="5">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Этажность</label>
+                            <input type="number" class="form-input" placeholder="12">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Описание</label>
+                        <textarea class="form-textarea" placeholder="Опишите объект..." id="descriptionInput"></textarea>
+                        <button type="button" class="btn-full btn-secondary" style="margin-top: 8px;" onclick="generateAIDescription()">
+                            <i class="fas fa-magic"></i> Сгенерировать описание с AI
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Фото и видео</label>
+                        <div class="image-upload" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div class="image-upload-text">
+                                Нажмите чтобы загрузить<br>
+                                <small>или перетащите файлы сюда</small>
+                            </div>
+                        </div>
+                        <input type="file" id="fileInput" multiple accept="image/*,video/*" style="display: none;" onchange="handleFileSelect(event)">
+                        <div id="filePreview" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                    </div>
+                    
+                    <div id="map"></div>
+                    
+                    <button type="submit" class="btn-full">
+                        <i class="fas fa-check"></i> Опубликовать объект
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Chat Modal -->
+    <div class="modal" id="aiChatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-robot" style="color: var(--secondary);"></i> AI Помощник Flapy</h2>
+                <button class="close-btn" onclick="closeModal('aiChatModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message ai">
+                            👋 Здравствуйте! Я AI-помощник Flapy. Я могу:<br><br>
+                            • Составить продающее описание для объекта<br>
+                            • Подсчитать ипотеку и выгодные условия<br>
+                            • Проанализировать рынок Астаны<br>
+                            • Помочь с юридическими вопросами<br>
+                            • Найти похожие объекты<br><br>
+                            Чем могу помочь?
+                        </div>
+                    </div>
+                    <div class="chat-input-wrapper">
+                        <input type="text" class="chat-input" placeholder="Напишите сообщение..." id="chatInput" onkeypress="handleChatKeypress(event)">
+                        <button class="chat-send" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Property Detail Modal -->
+    <div class="modal" id="propertyDetailModal">
+        <div class="modal-content" style="max-height: 95vh;">
+            <div class="detail-gallery">
+                <img src="" alt="Property" id="detailImage">
+                <button class="close-btn" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.9);" onclick="closeModal('propertyDetailModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="detail-content">
+                <div class="detail-price" id="detailPrice">45 000 000 ₸</div>
+                <h1 class="detail-title" id="detailTitle">3-комнатная квартира, 85 м², ЖК Нурлы Тау</h1>
+                
+                <div class="detail-section">
+                    <h3><i class="fas fa-map-marker-alt" style="color: var(--primary);"></i> Расположение</h3>
+                    <p id="detailLocation" style="color: var(--gray);">Есильский район, проспект Кабанбай батыра 83</p>
+                    <div id="detailMap" style="height: 200px; border-radius: var(--radius); margin-top: 12px;"></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Характеристики</h3>
+                    <div class="detail-features-grid">
+                        <div class="detail-feature">
+                            <i class="fas fa-bed"></i>
+                            <div>
+                                <div class="detail-feature-label">Комнаты</div>
+                                <div class="detail-feature-value">3</div>
+                            </div>
+                        </div>
+                        <div class="detail-feature">
+                            <i class="fas fa-ruler-combined"></i>
+                            <div>
+                                <div class="detail-feature-label">Площадь</div>
+                                <div class="detail-feature-value">85 м²</div>
+                            </div>
+                        </div>
+                        <div class="detail-feature">
+                            <i class="fas fa-building"></i>
+                            <div>
+                                <div class="detail-feature-label">Этаж</div>
+                                <div class="detail-feature-value">12/16</div>
+                            </div>
+                        </div>
+                        <div class="detail-feature">
+                            <i class="fas fa-home"></i>
+                            <div>
+                                <div class="detail-feature-label">Тип</div>
+                                <div class="detail-feature-value">Квартира</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Описание</h3>
+                    <div class="detail-description" id="detailDescription">
+                        Просторная 3-комнатная квартира в престижном ЖК Нурлы Тау. Современный ремонт, панорамные окна с видом на город. Развитая инфраструктура: школы, детские сады, магазины в шаговой доступности. Закрытый двор с охраной и видеонаблюдением.
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Риелтор</h3>
+                    <div class="property-footer" style="border-top: none; padding-top: 0;">
+                        <div class="realtor-info">
+                            <div class="realtor-avatar" id="detailRealtorAvatar">АК</div>
+                            <div class="realtor-details">
+                                <div class="realtor-name" id="detailRealtorName">
+                                    Анна Ким 
+                                    <span class="verified-badge"><i class="fas fa-check-circle"></i> VERIFIED</span>
+                                </div>
+                                <div class="realtor-id" id="detailRealtorId">ID: R-78234</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-actions">
+                    <button class="btn-full btn-primary" onclick="callRealtor(currentPropertyId)">
+                        <i class="fas fa-phone"></i> Позвонить
+                    </button>
+                    <button class="btn-full btn-outline" onclick="quickMessage(currentPropertyId)">
+                        <i class="fas fa-comment"></i> Написать
+                    </button>
+                </div>
+                
+                <button class="btn-full btn-secondary" style="margin-top: 12px;" onclick="shareProperty(currentPropertyId)">
+                    <i class="fas fa-share-alt"></i> Поделиться объектом
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Share Modal -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content" style="max-height: 60vh;">
+            <div class="modal-header">
+                <h2 class="modal-title">Поделиться объектом</h2>
+                <button class="close-btn" onclick="closeModal('shareModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--gray); margin-bottom: 20px; text-align: center; font-size: 14px;">Выберите способ отправки клиенту</p>
+                <div class="share-options">
+                    <button class="share-btn" style="background: #25D366; color: white;" onclick="shareVia('whatsapp')">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>WhatsApp</span>
+                    </button>
+                    <button class="share-btn" style="background: #0088cc; color: white;" onclick="shareVia('telegram')">
+                        <i class="fab fa-telegram"></i>
+                        <span>Telegram</span>
+                    </button>
+                    <button class="share-btn" style="background: var(--dark); color: white;" onclick="copyLink()">
+                        <i class="fas fa-link"></i>
+                        <span>Скопировать</span>
+                    </button>
+                    <button class="share-btn" onclick="generatePDF()">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF</span>
+                    </button>
+                </div>
+                
+                <div style="margin-top: 24px; padding: 16px; background: var(--light); border-radius: var(--radius-sm);">
+                    <label class="form-label">Красивая ссылка</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" class="form-input" value="flapy.kz/p/AST-78432" readonly style="font-size: 13px;">
+                        <button class="btn-small btn-primary" onclick="copyBeautifulLink()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 16px; padding: 12px; background: rgba(255,107,107,0.1); border-radius: var(--radius-sm); border-left: 4px solid var(--primary);">
+                    <p style="font-size: 12px; color: var(--dark);">
+                        <i class="fas fa-shield-alt" style="color: var(--primary);"></i> 
+                        Ссылка защищена и содержит водяной знак. При копировании контента сохраняется информация об авторе.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mortgage Calculator Modal -->
+    <div class="modal" id="mortgageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-calculator" style="color: var(--secondary);"></i> Ипотечный калькулятор</h2>
+                <button class="close-btn" onclick="closeModal('mortgageModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Стоимость жилья</label>
+                    <div class="price-input-wrapper">
+                        <input type="text" class="form-input" value="45 000 000" id="mortgagePrice" oninput="formatPrice(this); calculateMortgage()">
+                        <span class="currency-label">₸</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Первоначальный взнос</label>
+                    <div class="price-input-wrapper">
+                        <input type="text" class="form-input" value="9 000 000" id="mortgageDown" oninput="formatPrice(this); calculateMortgage()">
+                        <span class="currency-label">₸</span>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Срок (лет)</label>
+                        <select class="form-select" id="mortgageYears" onchange="calculateMortgage()">
+                            <option value="5">5 лет</option>
+                            <option value="10">10 лет</option>
+                            <option value="15" selected>15 лет</option>
+                            <option value="20">20 лет</option>
+                            <option value="25">25 лет</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ставка (%)</label>
+                        <input type="number" class="form-input" value="14.5" id="mortgageRate" onchange="calculateMortgage()">
+                    </div>
+                </div>
+                
+                <div class="calculator-result">
+                    <div class="calculator-amount" id="monthlyPayment">380 450 ₸</div>
+                    <div class="calculator-label">Ежемесячный платеж</div>
+                </div>
+                
+                <h3 style="font-size: 15px; margin-bottom: 12px;">Предложения банков</h3>
+                <div class="bank-list">
+                    <div class="bank-item" onclick="selectBank(this, 13.5)">
+                        <div class="bank-info">
+                            <div class="bank-logo">Х</div>
+                            <div>
+                                <div class="bank-name">Halyk Bank</div>
+                                <div class="bank-rate">от 13.5% годовых</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                    <div class="bank-item" onclick="selectBank(this, 14.0)">
+                        <div class="bank-info">
+                            <div class="bank-logo">К</div>
+                            <div>
+                                <div class="bank-name">Kaspi Bank</div>
+                                <div class="bank-rate">от 14.0% годовых</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                    <div class="bank-item" onclick="selectBank(this, 14.5)">
+                        <div class="bank-info">
+                            <div class="bank-logo">С</div>
+                            <div>
+                                <div class="bank-name">Сбербанк</div>
+                                <div class="bank-rate">от 14.5% годовых</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                    <div class="bank-item" onclick="selectBank(this, 15.0)">
+                        <div class="bank-info">
+                            <div class="bank-logo">Е</div>
+                            <div>
+                                <div class="bank-name">Евразийский банк</div>
+                                <div class="bank-rate">от 15.0% годовых</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--gray);"></i>
+                    </div>
+                </div>
+                
+                <button class="btn-full" style="margin-top: 20px;">
+                    <i class="fas fa-file-alt"></i> Получить одобрение онлайн
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Auth Modal -->
+    <div class="modal" id="authModal" style="display: flex;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px;">F</div>
+                    <h2 class="modal-title">Вход для риелторов</h2>
+                </div>
+                <button class="close-btn" onclick="closeModal('authModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-options">
+                    <button class="auth-btn" onclick="authWithWhatsApp()">
+                        <i class="fab fa-whatsapp" style="color: #25D366;"></i>
+                        <span>Войти через WhatsApp</span>
+                    </button>
+                    <button class="auth-btn" onclick="authWithPhone()">
+                        <i class="fas fa-mobile-alt" style="color: var(--primary);"></i>
+                        <span>Войти по номеру телефона</span>
+                    </button>
+                </div>
+                
+                <div class="divider">
+                    <span>или</span>
+                </div>
+                
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <input type="tel" class="form-input" placeholder="+7 (___) ___-__-__" id="phoneInput">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-input" placeholder="Пароль из SMS" id="smsCode">
+                    </div>
+                    <button type="submit" class="btn-full">Войти</button>
+                </form>
+                
+                <div style="text-align: center; margin-top: 20px; font-size: 13px; color: var(--gray);">
+                    <p>Нет аккаунта? <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 600;">Зарегистрироваться</a></p>
+                    <p style="margin-top: 8px;">Для агентств — <a href="#" style="color: var(--primary);">отдельный вход</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legal Footer -->
+    <footer class="legal-footer">
+        <div class="legal-text">
+            © 2024 Flapy.kz — Профессиональная платформа для риелторов Астаны.<br>
+            Все права защищены. Зарегистрированная торговая марка.<br><br>
+            
+            <strong>Юридическая информация:</strong><br>
+            Данная платформа является закрытым профессиональным инструментом для сертифицированных риелторов 
+            и агентств недвижимости Республики Казахстан. В соответствии со ст. 405 Гражданского кодекса РК 
+            и Законом РК «О государственной регистрации прав на недвижимое имущество», все данные защищены 
+            и являются конфиденциальной информацией.<br><br>
+            
+            Копирование, распространение или использование данных без письменного согласия правообладателя 
+            преследуется по закону (ст. 174 УК РК — нарушение авторских прав, ст. 205 УК РК — нарушение 
+            неприкосновенности частной жизни). Каждый объект защищен цифровыми водяными знаками и 
+            отслеживанием действий пользователя.<br><br>
+            
+            Служба поддержки: <a href="tel:+77714874879" style="color: white;">+7 (771) 487-48-79</a> (WhatsApp)
+        </div>
+        <div class="legal-links">
+            <a href="#" class="legal-link">Политика конфиденциальности</a>
+            <a href="#" class="legal-link">Пользовательское соглашение</a>
+            <a href="#" class="legal-link">Правила верификации</a>
+            <a href="#" class="legal-link">Поддержка</a>
+        </div>
+    </footer>
+
+    <script>
+        // Anti-copy protection
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) {
+                e.preventDefault();
+            }
+        });
+        
+        // Detect device type
+        const isMobile = window.innerWidth < 768;
+        let currentPropertyId = null;
+        let adminClickCount = 0;
+        
+        // Offline detection
+        window.addEventListener('online', () => {
+            document.getElementById('offlineBanner').classList.remove('show');
+            showToast('Подключение восстановлено');
+        });
+        
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineBanner').classList.add('show');
+            showToast('Оффлайн-режим активирован');
+        });
+        
+        // Admin panel access (5 clicks)
+        function handleAdminClick() {
+            adminClickCount++;
+            if (adminClickCount >= 5) {
+                adminClickCount = 0;
+                openAdminPanel();
+            }
+        }
+        
+        function openAdminPanel() {
+            showToast('🔐 Открыта панель администратора');
+            // Here would be admin panel logic
+        }
+        
+        // Format price input
+        function formatPrice(input) {
+            let value = input.value.replace(/\s/g, '').replace(/[^\d]/g, '');
+            if (value) {
+                value = parseInt(value).toLocaleString('ru-RU').replace(/,/g, ' ');
+            }
+            input.value = value;
+        }
+        
+        // Tab switching
+        function switchTab(element, type) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Filter properties logic here
+            showToast(`Фильтр: ${type === 'all' ? 'Все объекты' : type}`);
+        }
+        
+        // Section navigation
+        function showSection(section) {
+            // Hide all sections
+            document.getElementById('homeSection').style.display = 'none';
+            document.getElementById('profileSection').style.display = 'none';
+            document.getElementById('verificationSection').style.display = 'none';
+            document.getElementById('crmSection').style.display = 'none';
+            document.getElementById('exchangeSection').style.display = 'none';
+            
+            // Show selected section
+            switch(section) {
+                case 'home':
+                    document.getElementById('homeSection').style.display = 'block';
+                    updateNavActive(0);
+                    break;
+                case 'profile':
+                    document.getElementById('profileSection').style.display = 'block';
+                    updateNavActive(4);
+                    break;
+                case 'verification':
+                    document.getElementById('verificationSection').style.display = 'block';
+                    break;
+                case 'crm':
+                    document.getElementById('crmSection').style.display = 'block';
+                    break;
+                case 'exchange':
+                    document.getElementById('exchangeSection').style.display = 'block';
+                    updateNavActive(3);
+                    break;
+                case 'chat':
+                    updateNavActive(1);
+                    showToast('Чат открыт');
+                    break;
+            }
+            
+            window.scrollTo(0, 0);
+        }
+        
+        function updateNavActive(index) {
+            document.querySelectorAll('.nav-item').forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
+        // Modal functions
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Initialize map if opening add property modal
+            if (id === 'addPropertyModal') {
+                setTimeout(initMap, 100);
+            }
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Property functions
+        function openAddProperty() {
+            openModal('addPropertyModal');
+        }
+        
+        function openPropertyDetail(id) {
+            currentPropertyId = id;
+            // Here would load property details
+            document.getElementById('detailImage').src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop';
+            openModal('propertyDetailModal');
+            
+            // Init detail map
+            setTimeout(() => {
+                const detailMap = L.map('detailMap').setView([51.1699, 71.4491], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(detailMap);
+                L.marker([51.1699, 71.4491]).addTo(detailMap);
+            }, 100);
+        }
+        
+        function toggleExchangeFields() {
+            const type = document.getElementById('dealType').value;
+            const priceGroup = document.getElementById('priceGroup');
+            const exchangeGroup = document.getElementById('exchangeGroup');
+            
+            if (type === 'exchange') {
+                priceGroup.style.display = 'none';
+                exchangeGroup.style.display = 'block';
+            } else {
+                priceGroup.style.display = 'block';
+                exchangeGroup.style.display = 'none';
+            }
+        }
+        
+        function submitProperty(e) {
+            e.preventDefault();
+            closeModal('addPropertyModal');
+            showToast('✅ Объект успешно добавлен!');
+            // Reset form
+            document.getElementById('addPropertyForm').reset();
+            document.getElementById('filePreview').innerHTML = '';
+        }
+        
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            const preview = document.getElementById('filePreview');
+            preview.innerHTML = '';
+            
+            for (let file of files) {
+                const div = document.createElement('div');
+                div.style.cssText = 'width: 60px; height: 60px; background: var(--light); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gray);';
+                div.innerHTML = '<i class="fas fa-image"></i>';
+                preview.appendChild(div);
+            }
+        }
+        
+        // AI Functions
+        function openAIChat() {
+            openModal('aiChatModal');
+        }
+        
+        function handleChatKeypress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.textContent = message;
+            messagesContainer.appendChild(userMsg);
+            
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message ai';
+                
+                if (message.toLowerCase().includes('описание') || message.toLowerCase().includes('текст')) {
+                    aiMsg.innerHTML = '💡 <strong>Продающее описание:</strong><br><br>✨ <strong>Эксклюзивное предложение!</strong><br><br>🌟 Просторная квартира с панорамным видом<br>🏡 Современный евроремонт 2023 года<br>🚗 Подземный паркинг включен<br>🌳 Закрытый благоустроенный двор<br><br>📞 Звоните прямо сейчас!';
+                } else if (message.toLowerCase().includes('ипотек') || message.toLowerCase().includes('калькулятор')) {
+                    aiMsg.innerHTML = '🏦 <strong>Расчет ипотеки:</strong><br><br>При стоимости 45 млн ₸ и взносе 20%:<br>• Ежемесячный платеж: ~380 000 ₸<br>• Переплата: ~23 млн ₸<br>• Лучшие условия: Halyk Bank (13.5%)<br><br>Хотите оформить предварительное одобрение?';
+                } else {
+                    aiMsg.textContent = 'Я вас понял! Для более точного ответа, пожалуйста, уточните ваш вопрос. Я могу помочь с описанием объектов, расчетом ипотеки или анализом рынка.';
+                }
+                
+                messagesContainer.appendChild(aiMsg);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 1000);
+        }
+        
+        function generateAIDescription() {
+            const textarea = document.getElementById('descriptionInput');
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Генерация...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                textarea.value = `✨ ЭКСКЛЮЗИВНОЕ ПРЕДЛОЖЕНИЕ ✨
+
+🏡 Идеальное сочетание комфорта и статуса!
+
+✅ Просторная планировка с функциональным зонированием
+✅ Панорамные окна с захватывающим видом на город
+✅ Премиальная отделка из натуральных материалов
+✅ Умный дом - управление светом и климатом с телефона
+
+🌟 Развитая инфраструктура:
+• ТЦ, рестораны, фитнес в 5 минутах
+• Детские сады и школы рядом
+• Охраняемая территория с видеонаблюдением
+
+💰 Отличная инвестиция - растущий район!
+
+📞 Звоните прямо сейчас! Показ в любое удобное время.`;
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast('✨ Описание сгенерировано!');
+            }, 1500);
+        }
+        
+        // Map initialization
+        let map;
+        function initMap() {
+            if (map) {
+                map.remove();
+            }
+            map = L.map('map').setView([51.1699, 71.4491], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            
+            // Add click handler to set marker
+            map.on('click', function(e) {
+                L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+            });
+        }
+        
+        // Mortgage calculator
+        function openMortgageCalculator() {
+            openModal('mortgageModal');
+        }
+        
+        function calculateMortgage() {
+            const price = parseInt(document.getElementById('mortgagePrice').value.replace(/\s/g, '')) || 0;
+            const down = parseInt(document.getElementById('mortgageDown').value.replace(/\s/g, '')) || 0;
+            const years = parseInt(document.getElementById('mortgageYears').value) || 15;
+            const rate = parseFloat(document.getElementById('mortgageRate').value) || 14.5;
+            
+            const loan = price - down;
+            const monthlyRate = rate / 100 / 12;
+            const payments = years * 12;
+            
+            let monthly = 0;
+            if (loan > 0 && monthlyRate > 0) {
+                monthly = loan * (monthlyRate * Math.pow(1 + monthlyRate, payments)) / (Math.pow(1 + monthlyRate, payments) - 1);
+            }
+            
+            document.getElementById('monthlyPayment').textContent = Math.round(monthly).toLocaleString('ru-RU') + ' ₸';
+        }
+        
+        function selectBank(element, rate) {
+            document.querySelectorAll('.bank-item').forEach(b => b.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('mortgageRate').value = rate;
+            calculateMortgage();
+        }
+        
+        // Exchange
+        function openExchangeModal(id) {
+            showToast('Открыт раздел обмена');
+        }
+        
+        // Share functions
+        function shareProperty(id) {
+            openModal('shareModal');
+        }
+        
+        function shareVia(platform) {
+            const url = 'https://flapy.kz/p/AST-78432';
+            const text = 'Посмотрите эту квартиру на Flapy!';
+            
+            if (platform === 'whatsapp') {
+                window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`);
+            } else if (platform === 'telegram') {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+            }
+            
+            closeModal('shareModal');
+            showToast('Ссылка отправлена!');
+        }
+        
+        function copyLink() {
+            navigator.clipboard.writeText('https://flapy.kz/p/AST-78432');
+            showToast('Ссылка скопирована!');
+        }
+        
+        function copyBeautifulLink() {
+            navigator.clipboard.writeText('flapy.kz/p/AST-78432');
+            showToast('Короткая ссылка скопирована!');
+        }
+        
+        function generatePDF() {
+            showToast('📄 PDF презентация генерируется...');
+            setTimeout(() => {
+                showToast('✅ PDF готов к скачиванию!');
+            }, 2000);
+        }
+        
+        // Other functions
+        function toggleFavorite(id) {
+            showToast('❤️ Добавлено в избранное');
+        }
+        
+        function quickMessage(id) {
+            showToast('💬 Открыт чат с риелтором');
+        }
+        
+        function callRealtor(id) {
+            window.location.href = 'tel:+77771234567';
+        }
+        
+        function filterByType(type) {
+            showToast(`Фильтр: ${type}`);
+        }
+        
+        function openFilters() {
+            showToast('Фильтры открыты');
+        }
+        
+        // Auth functions
+        function authWithWhatsApp() {
+            showToast('📱 Отправлен запрос в WhatsApp');
+            setTimeout(() => {
+                closeModal('authModal');
+                showToast('✅ Успешный вход!');
+            }, 1500);
+        }
+        
+        function authWithPhone() {
+            document.getElementById('phoneInput').focus();
+        }
+        
+        function handleLogin(e) {
+            e.preventDefault();
+            closeModal('authModal');
+            showToast('✅ Добро пожаловать в Flapy!');
+        }
+        
+        function handleLogout() {
+            if (confirm('Выйти из аккаунта?')) {
+                showToast('👋 До свидания!');
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        }
+        
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in (simulate)
+            // In real app, check token/session
+            
+            // Initialize mortgage calculator
+            calculateMortgage();
+            
+            // Load logo
+            const logoImg = document.getElementById('logoImg');
+            logoImg.src = '/mnt/kimi/upload/Gemini_Generated_Image_6h32ff6h32ff6h32.png';
+        });
+        
+        // Close modals on outside click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
