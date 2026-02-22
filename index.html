@@ -3,187 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flapy.kz — Профессиональная платформа для риелторов Астаны</title>
+    <title>Flapy.kz — Профессиональная платформа</title>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <style>
         :root {
             --primary: #E07B39; --primary-light: #F4A261; --primary-dark: #C65D26;
-            --secondary: #2A9D8F; --accent: #E9C46A; --dark: #264653;
-            --light: #F8F9FA; --white: #FFFFFF; --gray: #6C757D;
-            --shadow: 0 4px 20px rgba(0,0,0,0.08); --radius: 16px;
+            --secondary: #2A9D8F; --dark: #264653; --light: #F8F9FA;
+            --white: #FFFFFF; --shadow: 0 4px 20px rgba(0,0,0,0.08); --radius: 16px;
         }
 
-        /* Основные стили из документа */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--light); color: var(--dark); overflow-x: hidden; }
+        body { background: var(--light); color: var(--dark); }
         
-        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 80px; background: var(--white); }
+        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--white); position: relative; padding-bottom: 80px; }
         
         /* Header */
-        .header { background: var(--white); padding: 12px 16px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; }
-        .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 22px; color: var(--primary); }
-        .logo img { width: 40px; height: 40px; border-radius: 10px; }
+        .header { background: var(--white); padding: 12px 16px; position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 700; font-size: 22px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .icon-btn { background: none; border: none; font-size: 20px; color: var(--dark); cursor: pointer; padding: 8px; }
 
-        /* Property Cards */
-        .property-list { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-        .property-card { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; }
-        .property-image { width: 100%; height: 200px; object-fit: cover; }
-        .property-info { padding: 16px; }
-        .property-price { font-size: 20px; font-weight: 700; color: var(--primary); }
-        
-        /* Floating Buttons */
-        .ai-float-btn { position: fixed; bottom: 100px; right: 20px; width: 56px; height: 56px; background: linear-gradient(135deg, var(--secondary), #21867a); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 20px rgba(42,157,143,0.4); z-index: 999; border: none; cursor: pointer; }
-        .whatsapp-btn { position: fixed; bottom: 170px; right: 20px; width: 56px; height: 56px; background: #25D366; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 20px rgba(37,211,102,0.4); z-index: 998; text-decoration: none; }
-
-        /* Hidden Admin Trigger */
-        .admin-trigger { position: fixed; top: 0; right: 0; width: 40px; height: 40px; opacity: 0; z-index: 9999; cursor: pointer; }
-
-        /* Modals */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: flex-end; backdrop-filter: blur(5px); }
-        .modal.active { display: flex; }
-        .modal-content { background: var(--white); width: 100%; border-radius: 24px 24px 0 0; padding: 20px; max-height: 90vh; overflow-y: auto; }
-        
-        /* Tabs & Filters */
-        .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px; scrollbar-width: none; }
+        /* Поиск и Табы */
+        .search-box { padding: 16px; }
+        .search-box input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; outline: none; }
+        .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 16px; scrollbar-width: none; }
         .tab { padding: 8px 16px; background: #eee; border-radius: 20px; font-size: 13px; white-space: nowrap; cursor: pointer; }
         .tab.active { background: var(--primary); color: white; }
 
-        /* Toast */
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 12px 24px; border-radius: 12px; display: none; z-index: 3000; }
+        /* Карточки объектов */
+        .property-list { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+        .property-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid #eee; }
+        .property-image { width: 100%; height: 200px; background: #eee; object-fit: cover; }
+        .property-info { padding: 15px; }
+        .property-price { font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 5px; }
+
+        /* Плавающие кнопки */
+        .whatsapp-btn { position: fixed; bottom: 160px; right: 20px; width: 56px; height: 56px; background: #25D366; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 999; text-decoration: none; }
+        .ai-float-btn { position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background: var(--secondary); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: none; cursor: pointer; z-index: 999; }
+
+        /* Модальные окна */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: flex-end; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; }
+        .modal-content { background: white; width: 100%; border-radius: 24px 24px 0 0; padding: 25px; max-height: 80vh; overflow-y: auto; }
+        
+        input[type="number"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* Нижняя навигация */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: white; display: flex; justify-content: space-around; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .nav-item { color: #ccc; font-size: 20px; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+
+        .admin-trigger { position: fixed; top: 0; right: 0; width: 50px; height: 50px; z-index: 9999; opacity: 0; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="admin-trigger" onclick="handleAdminLogin()"></div>
-    <div id="toast" class="toast"></div>
 
     <div class="app-container">
         <header class="header">
-            <div class="logo">
-                <img src="https://via.placeholder.com/40" alt="Logo">
-                <span>Flapy<span style="color:var(--dark)">.kz</span></span>
-            </div>
+            <div class="logo">Flapy<span style="color:var(--dark)">.kz</span></div>
             <div class="header-actions">
                 <button class="icon-btn" onclick="openModal('calcModal')"><i class="fa-solid fa-calculator"></i></button>
-                <button class="icon-btn"><i class="fa-solid fa-bell"></i></button>
+                <button class="icon-btn" onclick="alert('Уведомлений пока нет')"><i class="fa-solid fa-bell"></i></button>
             </div>
         </header>
 
-        <section style="padding: 16px;">
-            <div style="display: flex; gap: 10px;">
-                <input type="text" placeholder="Поиск объектов..." style="flex:1; padding: 12px; border-radius: 12px; border: 1px solid #ddd;">
-                <button style="background: var(--primary); color: white; border: none; padding: 12px; border-radius: 12px;"><i class="fa-solid fa-sliders"></i></button>
-            </div>
+        <section class="search-box">
+            <input type="text" placeholder="Поиск по Астане...">
         </section>
 
         <div class="tabs">
-            <div class="tab active">Все объекты</div>
+            <div class="tab active">Все</div>
             <div class="tab">Квартиры</div>
             <div class="tab">Дома</div>
-            <div class="tab">Коммерция</div>
+            <div class="tab">Участки</div>
         </div>
 
         <main class="property-list" id="propertyList">
-            <div class="property-card">
-                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800" class="property-image">
-                <div class="property-info">
-                    <div class="property-price">45 000 000 ₸</div>
-                    <div style="font-size: 14px; color: var(--gray);">3-комн. квартира • 85 м² • 7/12 этаж</div>
-                    <div style="margin-top: 8px; font-size: 12px; color: var(--dark);"><i class="fa-solid fa-location-dot"></i> Астана, район Есиль</div>
-                </div>
-            </div>
+            <p style="text-align: center; color: #999; padding: 40px;">Загрузка объектов из базы...</p>
         </main>
 
-        <nav style="position: fixed; bottom: 0; width: 100%; max-width: 480px; background: white; display: flex; justify-content: space-around; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
-            <i class="fa-solid fa-house" style="color: var(--primary);"></i>
-            <i class="fa-solid fa-map-location-dot"></i>
-            <i class="fa-solid fa-circle-plus" style="font-size: 30px; margin-top: -20px; color: var(--primary);"></i>
-            <i class="fa-solid fa-message"></i>
-            <i class="fa-solid fa-user"></i>
+        <nav class="bottom-nav">
+            <div class="nav-item active"><i class="fa-solid fa-house"></i></div>
+            <div class="nav-item"><i class="fa-solid fa-map-location-dot"></i></div>
+            <div class="nav-item" style="font-size: 35px; margin-top: -15px;"><i class="fa-solid fa-circle-plus"></i></div>
+            <div class="nav-item"><i class="fa-solid fa-message"></i></div>
+            <div class="nav-item" onclick="openModal('adminAuthModal')"><i class="fa-solid fa-user"></i></div>
         </nav>
     </div>
 
     <a href="https://wa.me/77071234567" class="whatsapp-btn"><i class="fa-brands fa-whatsapp"></i></a>
     <button class="ai-float-btn" onclick="openModal('aiModal')"><i class="fa-solid fa-robot"></i></button>
 
-    <div id="calcModal" class="modal">
+    <div id="calcModal" class="modal" onclick="if(event.target==this) closeModal('calcModal')">
         <div class="modal-content">
-            <h3>Ипотечный калькулятор</h3>
-            <div style="margin-top: 15px;">
-                <label>Стоимость недвижимости (₸)</label>
-                <input type="number" id="price" value="45000000" style="width: 100%; padding: 10px; margin-bottom: 10px;">
-                <label>Первоначальный взнос (₸)</label>
-                <input type="number" id="downpayment" value="9000000" style="width: 100%; padding: 10px; margin-bottom: 10px;">
-                <button onclick="calculateMortgage()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 12px;">Рассчитать</button>
-            </div>
-            <div id="calcResult" style="margin-top: 20px; font-weight: bold; text-align: center; color: var(--primary); font-size: 20px;"></div>
-            <button onclick="closeModal('calcModal')" style="margin-top: 20px; width: 100%; background: #eee; border: none; padding: 10px;">Закрыть</button>
+            <h3 style="margin-bottom: 15px;">Ипотечный калькулятор</h3>
+            <label>Цена (₸)</label>
+            <input type="number" id="price" value="30000000">
+            <label>Первоначальный взнос (₸)</label>
+            <input type="number" id="downpayment" value="6000000">
+            <button class="btn-main" onclick="calculateMortgage()">Рассчитать платеж</button>
+            <div id="calcResult" style="margin-top: 20px; font-size: 24px; font-weight: bold; color: var(--primary); text-align: center;"></div>
         </div>
     </div>
 
-    <div id="aiModal" class="modal">
+    <div id="aiModal" class="modal" onclick="if(event.target==this) closeModal('aiModal')">
         <div class="modal-content">
-            <h3>AI-Помощник Flapy</h3>
-            <div style="height: 300px; background: #f9f9f9; border-radius: 12px; padding: 10px; overflow-y: auto;" id="chatMessages">
-                <div>Привет! Я помогу найти лучший объект в Астане.</div>
+            <h3>Помощник Baymax</h3>
+            <div id="chat" style="height: 200px; overflow-y: auto; margin: 15px 0; background: #f9f9f9; padding: 10px; border-radius: 10px;">
+                Приветствую, Сир! Чем могу помочь?
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <input type="text" placeholder="Ваш вопрос..." style="flex:1; padding: 10px;">
-                <button style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 10px;">Отправить</button>
-            </div>
+            <input type="text" placeholder="Спросите что-нибудь..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
         </div>
     </div>
 
     <script>
-        // Сир, я активировал логику скрытого входа
-        let clickCount = 0;
-        function handleAdminLogin() {
-            clickCount++;
-            if (clickCount === 5) {
-                const pass = prompt("Сир, введите пароль доступа:");
-                if (pass === "1234") { // Ваш пароль
-                    showToast("✅ Доступ разрешен. Загрузка панели управления...");
-                    // Здесь будет редирект на admin.html или вызов функции
-                } else {
-                    showToast("❌ Ошибка доступа");
-                    clickCount = 0;
-                }
+        // 1. ИНИЦИАЛИЗАЦИЯ SUPABASE (ЗАМЕНИТЕ ДАННЫЕ НИЖЕ!)
+        const SUPABASE_URL = 'https://qagcjbfqjheflilennpd.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhZ2NqYmZxamhlZmxpbGVubnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2ODI5MzksImV4cCI6MjA4NzI1ODkzOX0.jzLXUE6Zi0EbcmorXxSqlLBVIRylJyYIeTQd5Kan53I';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 2. ЗАГРУЗКА ОБЪЕКТОВ
+        async function loadProperties() {
+            const container = document.getElementById('propertyList');
+            try {
+                const { data, error } = await _supabase.from('properties').select('*');
+                if (error) throw error;
+
+                container.innerHTML = '';
+                if (data.length === 0) container.innerHTML = '<p style="text-align:center;">База пуста</p>';
+
+                data.forEach(item => {
+                    container.innerHTML += `
+                        <div class="property-card">
+                            <img src="${item.image_url || 'https://via.placeholder.com/400x200'}" class="property-image">
+                            <div class="property-info">
+                                <div class="property-price">${Number(item.price).toLocaleString()} ₸</div>
+                                <div style="font-size:14px; color:#666;">${item.address || 'Астана'}</div>
+                                <button onclick="window.open('https://wa.me/77071234567')" class="btn-main" style="padding:10px; font-size:14px; background:#25D366;">Связаться</button>
+                            </div>
+                        </div>`;
+                });
+            } catch (err) {
+                container.innerHTML = '<p style="color:red; text-align:center;">Ошибка подключения к Supabase</p>';
+                console.error(err);
             }
-            setTimeout(() => { clickCount = 0; }, 3000);
         }
 
-        // Функции модальных окон
+        // 3. ФУНКЦИИ ИНТЕРФЕЙСА
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // Ипотечный расчет из вашего документа
         function calculateMortgage() {
             const price = document.getElementById('price').value;
             const down = document.getElementById('downpayment').value;
             const loan = price - down;
-            const monthly = Math.round((loan * (0.17 / 12)) / (1 - Math.pow(1 + (0.17 / 12), -240))); // 17% на 20 лет
+            const monthly = Math.round((loan * (0.17 / 12)) / (1 - Math.pow(1 + (0.17 / 12), -240))); 
             document.getElementById('calcResult').innerText = monthly.toLocaleString() + " ₸ / мес";
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => { t.style.display = 'none'; }, 3000);
+        let clicks = 0;
+        function handleAdminLogin() {
+            clicks++;
+            if (clicks === 5) {
+                const p = prompt("Введите секретный код:");
+                if(p === "1234") alert("Доступ разрешен, Сир!");
+                clicks = 0;
+            }
+            setTimeout(() => clicks = 0, 2000);
         }
 
-        // Инициализация при загрузке
-        window.onclick = function(event) {
-            if (event.target.className === 'modal active') {
-                event.target.classList.remove('active');
-            }
-        }
+        // Запуск при старте
+        document.addEventListener('DOMContentLoaded', loadProperties);
     </script>
 </body>
 </html>
