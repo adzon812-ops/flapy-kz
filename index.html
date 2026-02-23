@@ -7,14 +7,14 @@
     <meta name="description" content="Закрытая площадка для риелторов Астаны. Объекты, обмены, коммуникация в одном месте.">
     
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300 ;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Leaflet Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css " />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js "></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
         :root {
@@ -147,6 +147,26 @@
         .icon-btn:hover {
             background: var(--primary);
             color: white;
+            transform: scale(1.05);
+        }
+        
+        .login-btn {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .login-btn:hover {
+            background: var(--primary-dark);
             transform: scale(1.05);
         }
         
@@ -698,6 +718,48 @@
         .form-textarea {
             min-height: 100px;
             resize: vertical;
+        }
+        
+        /* Phone Input Kaspi Style */
+        .phone-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            border: 2px solid #E8ECF2;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            transition: all 0.3s;
+            background: var(--white);
+        }
+        
+        .phone-input-wrapper:focus-within {
+            border-color: var(--primary);
+        }
+        
+        .phone-prefix {
+            padding: 12px 8px 12px 14px;
+            background: var(--light);
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 16px;
+            border-right: 2px solid #E8ECF2;
+            white-space: nowrap;
+        }
+        
+        .phone-input {
+            flex: 1;
+            border: none;
+            padding: 12px 14px;
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            background: transparent;
+            letter-spacing: 0.5px;
+        }
+        
+        .phone-input::placeholder {
+            color: #bbb;
+            letter-spacing: 1px;
         }
         
         .price-input-wrapper {
@@ -1687,6 +1749,75 @@
         .status-new { background: #E3F2FD; color: #1976D2; }
         .status-viewing { background: #FFF3E0; color: #F57C00; }
         .status-deal { background: #E8F5E9; color: #388E3C; }
+        
+        /* Auth Section Styles */
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .auth-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 36px;
+            font-weight: 700;
+        }
+        
+        .auth-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .auth-subtitle {
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .sms-code-inputs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 24px 0;
+        }
+        
+        .sms-digit {
+            width: 48px;
+            height: 56px;
+            border: 2px solid #E8ECF2;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .sms-digit:focus {
+            outline: none;
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .resend-code {
+            text-align: center;
+            color: var(--gray);
+            font-size: 13px;
+            margin-top: 16px;
+        }
+        
+        .resend-code a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -1720,8 +1851,8 @@
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge">3</span>
                 </button>
-                <button class="icon-btn desktop-only" onclick="showSection('profile')">
-                    <i class="fas fa-user"></i>
+                <button class="login-btn" onclick="openAuthModal()">
+                    <i class="fas fa-user"></i> Войти
                 </button>
             </div>
         </header>
@@ -1753,7 +1884,7 @@
         
         <!-- Main Content Area -->
         <main class="main-content" id="mainContent">
-            <!-- Home Section -->
+            <!-- Home Section (Listings) -->
             <div id="homeSection">
                 <!-- Tabs -->
                 <div class="tabs">
@@ -1769,7 +1900,7 @@
                     <!-- Property Card 1 -->
                     <div class="property-card" onclick="openPropertyDetail(1)">
                         <div style="position: relative;">
-                            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop " alt="Property" class="property-image">
+                            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop" alt="Property" class="property-image">
                             <div class="property-badges">
                                 <span class="badge badge-sale">Продажа</span>
                                 <span class="badge badge-exclusive">Эксклюзив</span>
@@ -1833,7 +1964,7 @@
                     <!-- Property Card 2 -->
                     <div class="property-card" onclick="openPropertyDetail(2)">
                         <div style="position: relative;">
-                            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop " alt="Property" class="property-image">
+                            <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop" alt="Property" class="property-image">
                             <div class="property-badges">
                                 <span class="badge badge-exchange">Обмен</span>
                             </div>
@@ -1889,7 +2020,7 @@
                     <!-- Property Card 3 -->
                     <div class="property-card" onclick="openPropertyDetail(3)">
                         <div style="position: relative;">
-                            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop " alt="Property" class="property-image">
+                            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop" alt="Property" class="property-image">
                             <div class="property-badges">
                                 <span class="badge badge-rent">Аренда</span>
                             </div>
@@ -1942,6 +2073,75 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Auth Section (Separate Tab) -->
+            <div id="authSection" style="display: none;">
+                <div class="auth-header">
+                    <div class="auth-logo">F</div>
+                    <h2 class="auth-title">Вход для риелторов</h2>
+                    <p class="auth-subtitle">Только для верифицированных специалистов</p>
+                </div>
+                
+                <div id="phoneStep">
+                    <div class="form-group">
+                        <label class="form-label">Номер телефона</label>
+                        <div class="phone-input-wrapper">
+                            <span class="phone-prefix">+7</span>
+                            <input type="tel" class="phone-input" placeholder="(700) 000-00-00" id="phoneInput" maxlength="15" oninput="formatPhoneInput(this)">
+                        </div>
+                        <small style="color: var(--gray); font-size: 12px; margin-top: 6px; display: block;">
+                            Как в Kaspi.kz: +7 (XXX) XXX-XX-XX
+                        </small>
+                    </div>
+                    
+                    <button class="btn-full" onclick="sendSMSCode()">
+                        <i class="fas fa-paper-plane"></i> Получить код
+                    </button>
+                    
+                    <div class="divider">
+                        <span>или</span>
+                    </div>
+                    
+                    <div class="auth-options">
+                        <button class="auth-btn" onclick="authWithWhatsApp()">
+                            <i class="fab fa-whatsapp" style="color: #25D366;"></i>
+                            <span>Войти через WhatsApp</span>
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 24px; font-size: 13px; color: var(--gray);">
+                        <p>Нет аккаунта? <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 600;">Зарегистрироваться</a></p>
+                        <p style="margin-top: 8px;">Для агентств — <a href="#" style="color: var(--primary);">отдельный вход</a></p>
+                    </div>
+                </div>
+                
+                <div id="codeStep" style="display: none;">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                        <p style="color: var(--gray); font-size: 14px;">Введите код из SMS</p>
+                        <p style="font-weight: 600; margin-top: 8px;" id="maskedPhone">+7 (7**) ***-**-**</p>
+                    </div>
+                    
+                    <div class="sms-code-inputs">
+                        <input type="text" class="sms-digit" maxlength="1" oninput="moveToNext(this, 0)" onkeydown="handleBackspace(event, this, 0)">
+                        <input type="text" class="sms-digit" maxlength="1" oninput="moveToNext(this, 1)" onkeydown="handleBackspace(event, this, 1)">
+                        <input type="text" class="sms-digit" maxlength="1" oninput="moveToNext(this, 2)" onkeydown="handleBackspace(event, this, 2)">
+                        <input type="text" class="sms-digit" maxlength="1" oninput="moveToNext(this, 3)" onkeydown="handleBackspace(event, this, 3)">
+                    </div>
+                    
+                    <button class="btn-full" onclick="verifyCode()">
+                        <i class="fas fa-check"></i> Подтвердить
+                    </button>
+                    
+                    <div class="resend-code">
+                        Не пришел код? <a href="#" onclick="resendCode(); return false;">Отправить повторно</a>
+                        <span id="timer" style="margin-left: 8px; color: var(--gray);">(59)</span>
+                    </div>
+                    
+                    <button class="btn-full btn-secondary" style="margin-top: 12px;" onclick="backToPhone()">
+                        <i class="fas fa-arrow-left"></i> Изменить номер
+                    </button>
                 </div>
             </div>
             
@@ -2191,7 +2391,7 @@
                 <div class="property-list">
                     <div class="property-card">
                         <div style="position: relative;">
-                            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop " alt="Property" class="property-image">
+                            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop" alt="Property" class="property-image">
                             <div class="property-badges">
                                 <span class="badge badge-exchange">ОБМЕН</span>
                             </div>
@@ -2238,9 +2438,9 @@
                 <i class="fas fa-exchange-alt"></i>
                 <span>Обмен</span>
             </a>
-            <a href="#" class="nav-item" onclick="showSection('profile'); return false;">
+            <a href="#" class="nav-item" onclick="showSection('auth'); return false;">
                 <i class="fas fa-user"></i>
-                <span>Профиль</span>
+                <span>Вход</span>
             </a>
         </nav>
     </div>
@@ -2251,7 +2451,7 @@
     </button>
     
     <!-- WhatsApp Support -->
-    <a href="https://wa.me/77714874879 " class="support-btn" target="_blank" title="Поддержка">
+    <a href="https://wa.me/77714874879" class="support-btn" target="_blank" title="Поддержка">
         <i class="fab fa-whatsapp"></i>
     </a>
     
@@ -2629,52 +2829,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- Auth Modal -->
-    <div class="modal" id="authModal" style="display: flex;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px;">F</div>
-                    <h2 class="modal-title">Вход для риелторов</h2>
-                </div>
-                <button class="close-btn" onclick="closeModal('authModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="auth-options">
-                    <button class="auth-btn" onclick="authWithWhatsApp()">
-                        <i class="fab fa-whatsapp" style="color: #25D366;"></i>
-                        <span>Войти через WhatsApp</span>
-                    </button>
-                    <button class="auth-btn" onclick="authWithPhone()">
-                        <i class="fas fa-mobile-alt" style="color: var(--primary);"></i>
-                        <span>Войти по номеру телефона</span>
-                    </button>
-                </div>
-                
-                <div class="divider">
-                    <span>или</span>
-                </div>
-                
-                <form onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <input type="tel" class="form-input" placeholder="+7 (___) ___-__-__" id="phoneInput">
-                    </div>
-                    <div class="form-group">
-                        <input type="password" class="form-input" placeholder="Пароль из SMS" id="smsCode">
-                    </div>
-                    <button type="submit" class="btn-full">Войти</button>
-                </form>
-                
-                <div style="text-align: center; margin-top: 20px; font-size: 13px; color: var(--gray);">
-                    <p>Нет аккаунта? <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 600;">Зарегистрироваться</a></p>
-                    <p style="margin-top: 8px;">Для агентств — <a href="#" style="color: var(--primary);">отдельный вход</a></p>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Legal Footer -->
     <footer class="legal-footer">
@@ -2716,6 +2870,7 @@
         const isMobile = window.innerWidth < 768;
         let currentPropertyId = null;
         let adminClickCount = 0;
+        let currentPhone = '';
         
         // Offline detection
         window.addEventListener('online', () => {
@@ -2742,6 +2897,135 @@
             // Here would be admin panel logic
         }
         
+        // Phone input formatting like Kaspi.kz (+7 XXX XXX XX XX)
+        function formatPhoneInput(input) {
+            let value = input.value.replace(/\D/g, '');
+            
+            // Remove leading 7 or 8 if present
+            if (value.startsWith('7') || value.startsWith('8')) {
+                value = value.substring(1);
+            }
+            
+            // Limit to 10 digits
+            value = value.substring(0, 10);
+            
+            // Format as (XXX) XXX-XX-XX
+            let formatted = '';
+            if (value.length > 0) {
+                formatted += '(' + value.substring(0, 3);
+                if (value.length >= 3) {
+                    formatted += ') ';
+                    if (value.length > 3) {
+                        formatted += value.substring(3, 6);
+                        if (value.length >= 6) {
+                            formatted += '-';
+                            if (value.length > 6) {
+                                formatted += value.substring(6, 8);
+                                if (value.length >= 8) {
+                                    formatted += '-';
+                                    formatted += value.substring(8, 10);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            input.value = formatted;
+        }
+        
+        // Send SMS code
+        function sendSMSCode() {
+            const phoneInput = document.getElementById('phoneInput');
+            const phone = phoneInput.value.replace(/\D/g, '');
+            
+            if (phone.length !== 10) {
+                showToast('❌ Введите полный номер телефона');
+                return;
+            }
+            
+            currentPhone = phone;
+            
+            // Show masked phone
+            document.getElementById('maskedPhone').textContent = '+7 (' + phone.substring(0, 3) + ') ***-**-**';
+            
+            // Switch to code step
+            document.getElementById('phoneStep').style.display = 'none';
+            document.getElementById('codeStep').style.display = 'block';
+            
+            // Focus first digit
+            setTimeout(() => {
+                document.querySelectorAll('.sms-digit')[0].focus();
+            }, 100);
+            
+            showToast('📱 Код отправлен на ваш номер');
+            startTimer();
+        }
+        
+        // SMS code input handling
+        function moveToNext(input, index) {
+            if (input.value.length === 1) {
+                const inputs = document.querySelectorAll('.sms-digit');
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                } else {
+                    // Last digit entered, auto verify
+                    verifyCode();
+                }
+            }
+        }
+        
+        function handleBackspace(event, input, index) {
+            if (event.key === 'Backspace' && input.value === '' && index > 0) {
+                const inputs = document.querySelectorAll('.sms-digit');
+                inputs[index - 1].focus();
+            }
+        }
+        
+        function verifyCode() {
+            const inputs = document.querySelectorAll('.sms-digit');
+            let code = '';
+            inputs.forEach(input => code += input.value);
+            
+            if (code.length === 4) {
+                showToast('✅ Успешный вход!');
+                setTimeout(() => {
+                    showSection('profile');
+                    // Reset auth form
+                    document.getElementById('phoneStep').style.display = 'block';
+                    document.getElementById('codeStep').style.display = 'none';
+                    document.getElementById('phoneInput').value = '';
+                    inputs.forEach(input => input.value = '');
+                }, 1000);
+            } else {
+                showToast('❌ Введите полный код');
+            }
+        }
+        
+        function backToPhone() {
+            document.getElementById('phoneStep').style.display = 'block';
+            document.getElementById('codeStep').style.display = 'none';
+            document.getElementById('phoneInput').focus();
+        }
+        
+        function startTimer() {
+            let seconds = 59;
+            const timerEl = document.getElementById('timer');
+            const interval = setInterval(() => {
+                seconds--;
+                timerEl.textContent = '(' + seconds + ')';
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    timerEl.innerHTML = '<a href="#" onclick="resendCode(); return false;" style="color: var(--primary);">Отправить</a>';
+                }
+            }, 1000);
+        }
+        
+        function resendCode() {
+            showToast('📱 Код отправлен повторно');
+            startTimer();
+        }
+        
         // Format price input
         function formatPrice(input) {
             let value = input.value.replace(/\s/g, '').replace(/[^\d]/g, '');
@@ -2764,6 +3048,7 @@
         function showSection(section) {
             // Hide all sections
             document.getElementById('homeSection').style.display = 'none';
+            document.getElementById('authSection').style.display = 'none';
             document.getElementById('profileSection').style.display = 'none';
             document.getElementById('verificationSection').style.display = 'none';
             document.getElementById('crmSection').style.display = 'none';
@@ -2774,6 +3059,10 @@
                 case 'home':
                     document.getElementById('homeSection').style.display = 'block';
                     updateNavActive(0);
+                    break;
+                case 'auth':
+                    document.getElementById('authSection').style.display = 'block';
+                    updateNavActive(4);
                     break;
                 case 'profile':
                     document.getElementById('profileSection').style.display = 'block';
@@ -2824,6 +3113,10 @@
             document.body.style.overflow = '';
         }
         
+        function openAuthModal() {
+            showSection('auth');
+        }
+        
         // Property functions
         function openAddProperty() {
             openModal('addPropertyModal');
@@ -2832,7 +3125,7 @@
         function openPropertyDetail(id) {
             currentPropertyId = id;
             // Here would load property details
-            document.getElementById('detailImage').src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop ';
+            document.getElementById('detailImage').src = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop';
             openModal('propertyDetailModal');
             
             // Init detail map
@@ -3015,13 +3308,13 @@
         }
         
         function shareVia(platform) {
-            const url = 'https://flapy.kz/p/AST-78432 ';
+            const url = 'https://flapy.kz/p/AST-78432';
             const text = 'Посмотрите эту квартиру на Flapy!';
             
             if (platform === 'whatsapp') {
-                window.open(`https://wa.me/?text= ${encodeURIComponent(text + ' ' + url)}`);
+                window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`);
             } else if (platform === 'telegram') {
-                window.open(`https://t.me/share/url?url= ${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
             }
             
             closeModal('shareModal');
@@ -3029,7 +3322,7 @@
         }
         
         function copyLink() {
-            navigator.clipboard.writeText('https://flapy.kz/p/AST-78432 ');
+            navigator.clipboard.writeText('https://flapy.kz/p/AST-78432');
             showToast('Ссылка скопирована!');
         }
         
@@ -3070,26 +3363,16 @@
         function authWithWhatsApp() {
             showToast('📱 Отправлен запрос в WhatsApp');
             setTimeout(() => {
-                closeModal('authModal');
                 showToast('✅ Успешный вход!');
+                showSection('profile');
             }, 1500);
-        }
-        
-        function authWithPhone() {
-            document.getElementById('phoneInput').focus();
-        }
-        
-        function handleLogin(e) {
-            e.preventDefault();
-            closeModal('authModal');
-            showToast('✅ Добро пожаловать в Flapy!');
         }
         
         function handleLogout() {
             if (confirm('Выйти из аккаунта?')) {
                 showToast('👋 До свидания!');
                 setTimeout(() => {
-                    location.reload();
+                    showSection('home');
                 }, 1000);
             }
         }
